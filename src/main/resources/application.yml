@@ -2,10 +2,10 @@ server:
   port: 8080
 
 hubspot:
-  client-id: sua_client_id
-  client-secret: seu_client_secret
+  client-id: e4bbb37d-ea08-4a99-8306-b5c51979dc68
+  client-secret: 66dc15bd-c9f2-4bac-a48c-1d37e12a2704
   redirect-uri: http://localhost:8080/oauth/callback
-  scopes: contacts
+  scopes: crm.schemas.contacts.read crm.schemas.contacts.write
   auth-url: https://app.hubspot.com/oauth/authorize
   token-url: https://api.hubapi.com/oauth/v1/token
   api-base-url: https://api.hubapi.com
