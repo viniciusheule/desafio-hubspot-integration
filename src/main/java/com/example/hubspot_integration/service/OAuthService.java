@@ -1,6 +1,5 @@
 package com.example.hubspot_integration.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -22,7 +21,7 @@ public class OAuthService {
     private final HubspotOAuthProperties hubspotProps;
     private final InMemoryTokenStore tokenStore;
 
-    @Autowired
+    
     public OAuthService(RestTemplate restTemplate,
                         HubspotOAuthProperties hubspotProps,
                         InMemoryTokenStore tokenStore) { // <-- AQUI
