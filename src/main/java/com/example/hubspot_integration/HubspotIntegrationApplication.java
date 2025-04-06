@@ -3,11 +3,13 @@ package com.example.hubspot_integration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
-import com.example.hubspot_integration.config.HubspotProperties;
+import com.example.hubspot_integration.config.HubspotOAuthProperties;
 
+@EnableScheduling
 @SpringBootApplication
-@EnableConfigurationProperties(HubspotProperties.class)
+@EnableConfigurationProperties(HubspotOAuthProperties.class)
 public class HubspotIntegrationApplication {
 
 	public static void main(String[] args) {

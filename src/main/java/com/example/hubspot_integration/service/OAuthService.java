@@ -1,61 +1,99 @@
 package com.example.hubspot_integration.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import com.example.hubspot_integration.config.HubspotProperties;
-import com.example.hubspot_integration.dto.AccessTokenResponse;
+import com.example.hubspot_integration.config.HubspotOAuthProperties;
+import com.example.hubspot_integration.model.TokenResponse;
+import com.example.hubspot_integration.store.InMemoryTokenStore;
 
 @Service
 public class OAuthService {
 
-    private final HubspotProperties properties;
     private final RestTemplate restTemplate;
+    private final HubspotOAuthProperties hubspotProps;
+    private final InMemoryTokenStore tokenStore;
 
-    public OAuthService(HubspotProperties properties) {
-        this.properties = properties;
-        this.restTemplate = new RestTemplate();
+    @Autowired
+    public OAuthService(RestTemplate restTemplate,
+                        HubspotOAuthProperties hubspotProps,
+                        InMemoryTokenStore tokenStore) { // <-- AQUI
+        this.restTemplate = restTemplate;
+        this.hubspotProps = hubspotProps;
+        this.tokenStore = tokenStore; // <-- AQUI
     }
 
     public String buildAuthorizationUrl() {
-        return UriComponentsBuilder.newInstance()
-                .scheme("https")
-                .host("app.hubspot.com")
-                .path("/oauth/authorize")
-                .queryParam("client_id", properties.getClientId())
-                .queryParam("redirect_uri", properties.getRedirectUri())
-                .queryParam("scope", properties.getScopes())
-                .queryParam("response_type", "code")
-                .build()
-                .toUriString();
+        return hubspotProps.getAuthUrl()
+                + "?client_id=" + hubspotProps.getClientId()
+                + "&redirect_uri=" + hubspotProps.getRedirectUri()
+                + "&scope=" + hubspotProps.getScopes().replace(" ", "%20")
+                + "&response_type=code";
     }
 
-    @SuppressWarnings("null")
-    public String exchangeCodeForAccessToken(String code) {
-        String tokenUrl = properties.getTokenUrl();
-    
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("grant_type", "authorization_code");
-        body.add("client_id", properties.getClientId());
-        body.add("client_secret", properties.getClientSecret());
-        body.add("redirect_uri", properties.getRedirectUri());
-        body.add("code", code);
-    
+    public String exchangeCodeForAccessToken(String authorizationCode) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+        form.add("grant_type", "authorization_code");
+        form.add("client_id", hubspotProps.getClientId());
+        form.add("client_secret", hubspotProps.getClientSecret());
+        form.add("redirect_uri", hubspotProps.getRedirectUri());
+        form.add("code", authorizationCode);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(form, headers);
+
+        ResponseEntity<TokenResponse> response = restTemplate.exchange(
+                hubspotProps.getTokenUrl(),
+                HttpMethod.POST,
+                request,
+                TokenResponse.class
+        );
+
+        TokenResponse tokenResponse = response.getBody();
+
+        if (tokenResponse != null) {
+            tokenStore.update(tokenResponse);
+            return tokenResponse.getAccess_token();
+        }
+
+        return null;
+    }
+
+    public TokenResponse refreshAccessToken(String refreshToken) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
     
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
+        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+        form.add("grant_type", "refresh_token");
+        form.add("client_id", hubspotProps.getClientId());
+        form.add("client_secret", hubspotProps.getClientSecret());
+        form.add("refresh_token", refreshToken);
     
-        ResponseEntity<AccessTokenResponse> response = restTemplate.postForEntity(
-            tokenUrl, request, AccessTokenResponse.class);
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(form, headers);
     
-        return response.getBody().getAccessToken();
+        ResponseEntity<TokenResponse> response = restTemplate.exchange(
+                hubspotProps.getTokenUrl(),
+                HttpMethod.POST,
+                request,
+                TokenResponse.class
+        );
+    
+        TokenResponse tokenResponse = response.getBody();
+
+        if (tokenResponse != null) {
+            tokenStore.update(tokenResponse);
+        }
+
+        return tokenResponse;
     }
 }

@@ -1,14 +1,13 @@
 package com.example.hubspot_integration.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 import lombok.Data;
 
 @Data
 @ConfigurationProperties(prefix = "hubspot")
-@Component
-public class HubspotProperties {
+public class HubspotOAuthProperties {
+
     private String clientId;
     private String clientSecret;
     private String redirectUri;
