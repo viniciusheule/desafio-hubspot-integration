@@ -11,6 +11,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.example.hubspot_integration.config.HubspotProperties;
+import com.example.hubspot_integration.dto.AccessTokenResponse;
 
 @Service
 public class OAuthService {
@@ -36,24 +37,25 @@ public class OAuthService {
                 .toUriString();
     }
 
+    @SuppressWarnings("null")
     public String exchangeCodeForAccessToken(String code) {
         String tokenUrl = properties.getTokenUrl();
-
-        // Body x-www-form-urlencoded
+    
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "authorization_code");
         body.add("client_id", properties.getClientId());
         body.add("client_secret", properties.getClientSecret());
         body.add("redirect_uri", properties.getRedirectUri());
         body.add("code", code);
-
+    
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
+    
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
-
-        ResponseEntity<String> response = restTemplate.postForEntity(tokenUrl, request, String.class);
-
-        return response.getBody();
+    
+        ResponseEntity<AccessTokenResponse> response = restTemplate.postForEntity(
+            tokenUrl, request, AccessTokenResponse.class);
+    
+        return response.getBody().getAccessToken();
     }
 }
