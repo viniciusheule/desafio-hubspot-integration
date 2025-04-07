@@ -30,7 +30,7 @@ public class ContactService {
         this.tokenStore = tokenStore;
     }
 
-    public ResponseEntity<?> createContact(ContactRequest request) {
+    public ResponseEntity<String> createContact(ContactRequest request){
     String accessToken = tokenStore.getAccessToken();
 
         if (accessToken == null) {

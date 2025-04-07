@@ -36,8 +36,7 @@ class ContactControllerTest {
         request.setFirstname("João");
         request.setLastname("Silva");
 
-        when(contactService.createContact(any()))
-                .thenReturn(ResponseEntity.ok("Contato criado com sucesso"));
+        when(contactService.createContact(any())).thenReturn(ResponseEntity.ok("Contato criado com sucesso"));
 
         mockMvc.perform(post("/contacts")
                         .contentType(MediaType.APPLICATION_JSON)

@@ -12,12 +12,12 @@ public class NoSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                .anyRequest().permitAll()
-            )
-            .httpBasic(Customizer.withDefaults())
-            .formLogin().disable();
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                                .anyRequest().permitAll()
+                )
+                .httpBasic(Customizer.withDefaults())
+                .formLogin(login -> login.disable());
 
         return http.build();
     }
