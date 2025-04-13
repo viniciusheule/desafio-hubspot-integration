@@ -9,3 +9,5 @@ hubspot:
   auth-url: https://app.hubspot.com/oauth/authorize
   token-url: https://api.hubapi.com/oauth/v1/token
   api-base-url: https://api.hubapi.com
+  oauth:
+    refresh-interval-ms: 60000 # 60 segundos (1 minuto)

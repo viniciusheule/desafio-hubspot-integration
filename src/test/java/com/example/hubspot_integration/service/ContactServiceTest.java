@@ -41,9 +41,9 @@ class ContactServiceTest {
     void setup() {
         mockServer = MockRestServiceServer.createServer(restTemplate);
         tokenStore.update(new com.example.hubspot_integration.model.TokenResponse() {{
-            setAccess_token("mock-access-token");
-            setExpires_in(3600);
-            setRefresh_token("mock-refresh-token");
+            setAccessToken(getAccessToken());
+            setExpiresIn(getExpiresIn());
+            setRefreshToken("mock-refresh-token");
         }});
     }
 
